@@ -15,6 +15,12 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
+        test: /\.ico$/,
+        use: [
+          'file-loader?name=[name].[ext]',
+        ],
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
