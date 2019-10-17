@@ -1,8 +1,29 @@
 import '@babel/polyfill';
-import Example from './Example';
+import { watch } from 'melanke-watchjs';
+import { onInputUrl, onSubmitUrl, setupDismiss } from './handlers';
+import { renderRssFormError, renderChannels } from './renders';
 
-export default () => {
-  const element = document.getElementById('point');
-  const obj = new Example(element);
-  obj.init();
+
+export default (containerId) => {
+  const container = document.getElementById(containerId);
+
+  const state = {
+    containerId,
+    rssForm: {
+      currentUrl: '',
+      errorUrl: '',
+    },
+    channels: [],
+  };
+
+  const rssField = container.querySelector('input');
+  const submitForm = container.querySelector('form');
+  rssField.addEventListener('input', onInputUrl(state));
+  submitForm.addEventListener('submit', onSubmitUrl(state));
+
+  watch(state.rssForm, 'errorUrl', renderRssFormError(state));
+  watch(state, 'channels', () => {
+    renderChannels(state);
+    setupDismiss(state, container);
+  });
 };

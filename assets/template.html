@@ -6,21 +6,36 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   </head>
   <body>
-    <div class="jumbotron">
-      <h1 id="point" class="display-4"></h1>
-      <p class="lead">Sample rss links:</p>
-      <ul>
-        <li>https://ru.hexlet.io/lessons.rss</li>
-        <li>http://www.habrahabr.ru/rss/main</li>
-        <li>https://www.banki.ru/xml/news.rss?clearcache=Y&from=2005.01.01&bank_id=6764</li>
-      </ul>
-      <hr class="my-4">
-      <form action="#" id="rss-form">
-      <div class="form-group">
-        <input id="rss-input" type="text" name="rss-url" value="" class="form-control" placeholder="yet not implemented" disabled="true">
+    <div class="container-fluid" id="rss-aggregator">
+      <div class="jumbotron">
+        <h3 class="display-4">RSS reader</h3>
+        <p class="lead">Sample rss links:</p>
+        <ul>
+          <li>https://ru.hexlet.io/lessons.rss</li>
+          <li>http://lorem-rss.herokuapp.com/feed?unit=second&interval=5</li>
+          <li>https://www.banki.ru/xml/news.rss?clearcache=Y&from=2005.01.01&bank_id=6764</li>
+        </ul>
+        <hr class="my-4">
+        <form action="" method="post">
+          <div class="form-group">
+            <div class="input-group mb-3">
+              <input class="form-control" name="rss-url" placeholder="https://example.rss" type="text" value="">
+              <div class="input-group-append">
+                <input class="btn btn-primary" disabled type="submit" value="add rss channel">
+              </div>
+              <div class="invalid-tooltip message"></div>
+            </div>
+          </div>
+        </form>
       </div>
-      <input id="rss-submit" type="submit" value="add rss channel" class="btn btn-primary btn-lg" disabled="true">
-    </form>
+      <div class="row">
+        <div class="col-4">
+          <ul class="list-unstyled channels"></ul>
+        </div>
+        <div class="col-8">
+          <ul class="list-unstyled posts"></ul>
+        </div>
+      </div>
     </div>
   </body>
 </html>
