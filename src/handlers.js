@@ -39,13 +39,7 @@ export const onSubmitUrl = (currentState) => (event) => {
   loadChannel(newChannel, state);
 };
 
-export const setupDismiss = (currentState, container) => {
+export const onRemoveChannel = (currentState) => (event, removingChannel) => {
   const state = currentState;
-  const failedChannels = state.channels.filter(({ status }) => status === 'error');
-  failedChannels.forEach(({ url }) => {
-    container.querySelector(`[data-url="${url}"]`).addEventListener('click', () => {
-      state.channels = state.channels.filter((channel) => channel.url !== url);
-      if (state.rssForm.currentUrl === url) state.rssForm.errorUrl = 'empty';
-    });
-  });
+  state.channels = state.channels.filter((channel) => channel !== removingChannel);
 };

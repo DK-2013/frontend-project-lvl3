@@ -1,7 +1,8 @@
 import '@babel/polyfill';
+import $ from 'jquery';
 import { watch } from 'melanke-watchjs';
-import { onInputUrl, onSubmitUrl, setupDismiss } from './handlers';
-import { renderRssFormError, renderChannels } from './renders';
+import { onInputUrl, onSubmitUrl, onRemoveChannel } from './handlers';
+import { renderRssFormError, renderRSSFeed } from './renders';
 
 
 export default (containerId) => {
@@ -20,10 +21,10 @@ export default (containerId) => {
   const submitForm = container.querySelector('form');
   rssField.addEventListener('input', onInputUrl(state));
   submitForm.addEventListener('submit', onSubmitUrl(state));
+  $(container).on('rss-remove-channel', onRemoveChannel(state));
 
   watch(state.rssForm, 'errorUrl', renderRssFormError(state));
   watch(state, 'channels', () => {
-    renderChannels(state);
-    setupDismiss(state, container);
+    renderRSSFeed(state);
   });
 };
