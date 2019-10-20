@@ -1,9 +1,12 @@
 import $ from 'jquery';
 // eslint-disable-next-line no-unused-vars
 import mdl from 'bootstrap/js/dist/modal';
+// eslint-disable-next-line no-unused-vars
+import alr from 'bootstrap/js/dist/alert';
 
-export const renderRssFormError = (state) => (prop, action, value) => {
-  const container = document.getElementById(state.containerId);
+export const renderRssFormError = (state) => () => {
+  const { containerId, inputState } = state;
+  const container = document.getElementById(containerId);
   const rssField = container.querySelector('input');
   const submitBtn = container.querySelector('input[type=submit]');
   const messageBox = container.querySelector('.message');
@@ -11,28 +14,28 @@ export const renderRssFormError = (state) => (prop, action, value) => {
     rssField.classList[isValid ? 'remove' : 'add']('is-invalid');
     rssField.classList[isValid ? 'add' : 'remove']('is-valid');
   };
-  switch (value) {
-    case 'invalid':
+  switch (inputState) {
+    case 'invalidUrl':
       messageBox.textContent = 'Need url';
       setFieldState(false);
-      submitBtn.setAttribute('disabled', true);
+      submitBtn.setAttribute('disabled', 'disabled');
       break;
-    case 'exist':
-      submitBtn.setAttribute('disabled', true);
+    case 'existUrl':
+      submitBtn.setAttribute('disabled', 'disabled');
       messageBox.textContent = 'Channel was added';
       setFieldState(false);
       break;
-    case 'valid':
+    case 'validUrl':
       setFieldState(true);
       submitBtn.removeAttribute('disabled');
       break;
     case 'empty':
-      submitBtn.setAttribute('disabled', true);
+      submitBtn.setAttribute('disabled', 'disabled');
       rssField.classList.remove('is-valid', 'is-invalid');
       rssField.value = '';
       break;
     default:
-      throw new Error('Unknown field error type');
+      throw new Error(`Unknown input state: ${inputState}`);
   }
 };
 
@@ -43,7 +46,7 @@ const showDescription = ({ data: { description, modalCt, title } }) => {
 };
 
 const emmitRemoveChannel = ({ data: { channel, container } }) => {
-  container.triggerHandler('rss-remove-channel', channel);
+  $(container).triggerHandler('rss-remove-channel', channel);
 };
 
 const renderChannel = (container) => (channel) => {
@@ -72,7 +75,7 @@ const renderChannel = (container) => (channel) => {
       node = $(`<li class="alert alert-danger p-1" role="alert">
               <div>
                 Something went wrong...
-                <button class="close">&times;</button>
+                <button class="close" data-dismiss="alert" >&times;</button>
               </div>
               <div  class="progress" style="height: 1.5rem">
                 <div class="progress-bar bg-danger progress-bar-striped text-left" style="width: 100%; padding: 0 .5rem">
@@ -88,35 +91,30 @@ const renderChannel = (container) => (channel) => {
   return node;
 };
 
-const renderChannels = (channels, container) => {
+export const renderChannels = (state) => () => {
+  const { channels, containerId } = state;
+  const container = $(`#${containerId}`);
   const renderedChannels = channels.map(renderChannel(container));
   container.find('.channels').empty().append(renderedChannels);
 };
 
 const renderPost = (modalCt) => ({ link, title, description }) => {
   const node = $(`<div class="row">
-  <div class="col-1">
-    <button class="btn btn-primary btn-sm py-0"> + </button>
-  </div>
-  <div class="col-11">
-    <a href="${link}" target="_blank">${title}</a>
-  </div>
-</div>`);
+    <div class="col-1">
+      <button class="btn btn-primary btn-sm py-0"> + </button>
+    </div>
+    <div class="col-11">
+      <a href="${link}" target="_blank">${title}</a>
+    </div>
+  </div>`);
   node.on('click', 'button', { description, modalCt, title }, showDescription);
   return node;
 };
 
-const renderPosts = (posts, container) => {
+export const renderPosts = (state) => () => {
+  const { posts, containerId } = state;
+  const container = $(`#${containerId}`);
   const modalCt = container.find('.modal');
   const renderedPosts = posts.map(renderPost(modalCt));
   container.find('.posts').empty().append(renderedPosts);
-};
-
-export const renderRSSFeed = ({ containerId, channels }) => {
-  const container = $(`#${containerId}`);
-  renderChannels(channels, container);
-
-  const posts = channels.filter(({ status }) => status === 'ready')
-    .flatMap(({ items }) => items);
-  renderPosts(posts, container);
 };

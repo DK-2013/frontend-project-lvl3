@@ -1,45 +1,82 @@
 import { isURL } from 'validator';
 import axios from 'axios';
+import _ from 'lodash';
 import parse from './parser';
 
 const cors = 'https://cors-anywhere.herokuapp.com/';
 
-export const onInputUrl = (state) => ({ target: inputEl }) => {
-  const { rssForm, channels } = state;
-  if (inputEl.value === '') rssForm.errorUrl = 'empty';
-  else if (!isURL(inputEl.value)) rssForm.errorUrl = 'invalid';
-  else if (channels.find(({ url }) => url === inputEl.value)) rssForm.errorUrl = 'exist';
-  else rssForm.errorUrl = 'valid';
-  rssForm.currentUrl = inputEl.value;
+const inputStates = [{
+  predicate: (value) => value === '',
+  inputState: 'empty',
+}, {
+  predicate: (value) => !isURL(value),
+  inputState: 'invalidUrl',
+}, {
+  predicate: (value, channels) => channels.find(({ url }) => value === url),
+  inputState: 'existUrl',
+}, {
+  predicate: () => true,
+  inputState: 'validUrl',
+}];
+
+export const onInputUrl = (currentState) => ({ target: { value } }) => {
+  const state = currentState;
+  const { inputState } = inputStates.find(({ predicate }) => predicate(value, state.channels));
+  state.inputState = inputState;
 };
 
-const loadChannel = (channel, currentState) => {
-  const newChannel = channel;
+const updatePosts = (currentState, channel, dataChannel) => {
+  const newPosts = _.differenceWith(dataChannel.items, channel.items, _.isEqual);
+  if (newPosts.length === 0) return;
   const state = currentState;
-  axios.get(`${cors}${newChannel.url}`)
-    .then(({ data }) => {
-      const loadedChannel = { ...channel, ...parse(data), status: 'ready' };
-      state.channels = [loadedChannel, ...state.channels.filter((ch) => ch !== channel)];
+  state.posts = [...newPosts, ...state.posts];
+};
+
+const updateChannel = _.assign;
+
+const delaySyncChannel = 2; // sec
+
+const syncChannelPosts = (currentChannel, currentState) => {
+  const state = currentState;
+  const channel = currentChannel;
+  const { url } = currentChannel;
+  setTimeout(() => {
+    axios.get(`${cors}${url}`)
+      .then(({ data }) => parse(data))
+      .then((dataChannel) => {
+        updatePosts(state, channel, dataChannel);
+        updateChannel(channel, dataChannel);
+      })
+      .finally(() => {
+        syncChannelPosts(channel, state);
+      });
+  }, delaySyncChannel * 1000);
+};
+
+export const addChannel = (currentState) => (event) => {
+  event.preventDefault();
+  const state = currentState;
+  const url = new FormData(event.target).get('rss-url');
+  const loadingChannel = { url, status: 'loading' };
+  state.inputState = 'empty';
+  state.channels = [loadingChannel, ...state.channels];
+
+  axios.get(`${cors}${url}`)
+    .then(({ data }) => parse(data))
+    .then((dataChannel) => {
+      const loadedChannel = { url, ...dataChannel, status: 'ready' };
+      const otherChannels = state.channels.filter((ch) => ch !== loadingChannel);
+      state.channels = [loadedChannel, ...otherChannels];
+      state.posts = [...loadedChannel.items, ...state.posts];
+      syncChannelPosts(loadedChannel, state);
     })
     .catch((error) => {
-      // newChannel.error = error;
-      newChannel.status = 'error';
+      loadingChannel.status = 'error';
       throw error;
     });
 };
 
-export const onSubmitUrl = (currentState) => (event) => {
-  event.preventDefault();
-  const state = currentState;
-  // const url = new FormData(event.target).get('rss-url');
-  const url = currentState.rssForm.currentUrl;
-  const newChannel = { url, status: 'loading' };
-  state.rssForm.errorUrl = 'empty';
-  state.channels = [newChannel, ...state.channels];
-  loadChannel(newChannel, state);
-};
-
-export const onRemoveChannel = (currentState) => (event, removingChannel) => {
+export const removeChannel = (currentState) => (event, removingChannel) => {
   const state = currentState;
   state.channels = state.channels.filter((channel) => channel !== removingChannel);
 };
