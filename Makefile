@@ -1,6 +1,5 @@
 install:
 	npm i
-	build
 
 develop:
 	NODE_ENV=development npx webpack-dev-server

@@ -34,7 +34,7 @@ const updatePosts = (currentState, channel, dataChannel) => {
 
 const updateChannel = _.assign;
 
-const delaySyncChannel = 2; // sec
+const delaySyncChannel = 5; // sec
 
 const syncChannelPosts = (currentChannel, currentState) => {
   const state = currentState;

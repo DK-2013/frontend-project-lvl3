@@ -1,32 +1,28 @@
 import $ from 'jquery';
-// eslint-disable-next-line no-unused-vars
-import mdl from 'bootstrap/js/dist/modal';
-// eslint-disable-next-line no-unused-vars
-import alr from 'bootstrap/js/dist/alert';
+import 'bootstrap/js/dist/modal';
+import 'bootstrap/js/dist/alert';
 
-export const renderRssFormError = (state) => () => {
-  const { containerId, inputState } = state;
-  const container = document.getElementById(containerId);
+export const renderRssForm = (state, container) => () => {
+  const { inputState } = state;
   const rssField = container.querySelector('input');
   const submitBtn = container.querySelector('input[type=submit]');
   const messageBox = container.querySelector('.message');
-  const setFieldState = (isValid) => {
-    rssField.classList[isValid ? 'remove' : 'add']('is-invalid');
-    rssField.classList[isValid ? 'add' : 'remove']('is-valid');
+  const renderError = (message) => {
+    submitBtn.setAttribute('disabled', 'disabled');
+    rssField.classList.add('is-invalid');
+    rssField.classList.remove('is-valid');
+    messageBox.textContent = message;
   };
   switch (inputState) {
     case 'invalidUrl':
-      messageBox.textContent = 'Need url';
-      setFieldState(false);
-      submitBtn.setAttribute('disabled', 'disabled');
+      renderError('Need url');
       break;
     case 'existUrl':
-      submitBtn.setAttribute('disabled', 'disabled');
-      messageBox.textContent = 'Channel was added';
-      setFieldState(false);
+      renderError('Channel was added');
       break;
     case 'validUrl':
-      setFieldState(true);
+      rssField.classList.remove('is-invalid');
+      rssField.classList.add('is-valid');
       submitBtn.removeAttribute('disabled');
       break;
     case 'empty':
@@ -91,9 +87,8 @@ const renderChannel = (container) => (channel) => {
   return node;
 };
 
-export const renderChannels = (state) => () => {
-  const { channels, containerId } = state;
-  const container = $(`#${containerId}`);
+export const renderChannels = (state, container) => () => {
+  const { channels } = state;
   const renderedChannels = channels.map(renderChannel(container));
   container.find('.channels').empty().append(renderedChannels);
 };
@@ -111,9 +106,8 @@ const renderPost = (modalCt) => ({ link, title, description }) => {
   return node;
 };
 
-export const renderPosts = (state) => () => {
-  const { posts, containerId } = state;
-  const container = $(`#${containerId}`);
+export const renderPosts = (state, container) => () => {
+  const { posts } = state;
   const modalCt = container.find('.modal');
   const renderedPosts = posts.map(renderPost(modalCt));
   container.find('.posts').empty().append(renderedPosts);

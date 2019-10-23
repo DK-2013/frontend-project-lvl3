@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
   devServer: {
-    contentBase: './dist',
     hot: true,
   },
   devtool: process.env.NODE_ENV === 'development' ? 'inline-source-map' : '',
@@ -13,12 +12,6 @@ module.exports = {
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.ico$/,
-        use: [
-          'file-loader?name=[name].[ext]',
-        ],
       },
       {
         test: /\.js$/,
@@ -32,6 +25,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'assets/template.html',
+      favicon: 'assets/favicon.ico',
     }),
   ],
 };

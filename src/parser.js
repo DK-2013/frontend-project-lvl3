@@ -1,16 +1,25 @@
-const parseItem = (node) => ({
-  title: node.querySelector('title').textContent,
-  description: node.querySelector('description').textContent,
-  link: node.querySelector('link').textContent,
-  // pubDate: node.querySelector('pubDate').textContent,
-});
+import _ from 'lodash';
 
-export default (data) => {
-  const dom = new DOMParser().parseFromString(data, 'text/xml');
-  return {
-    title: dom.querySelector('title').textContent,
-    description: dom.querySelector('description').textContent,
-    link: dom.querySelector('link').textContent,
-    items: Array.from(dom.querySelectorAll('item')).map(parseItem),
-  };
+const getDataFromNode = (node, selectors) => {
+  const elements = selectors.map(node.querySelector, node);
+  const data = _.map(elements, 'textContent');
+  return _.zipObject(selectors, data);
+};
+
+const parseItem = (node) => getDataFromNode(node, ['title', 'description', 'link']);
+
+const validate = (docElement) => {
+  const requiredElementNames = ['title', 'description', 'link'];
+  const getRequiredElement = (elName) => docElement.querySelector(`rss > channel > ${elName}`);
+  const requiredElements = requiredElementNames.map(getRequiredElement, docElement);
+  if (requiredElements.length !== 3) throw new Error('Invalid schema of loaded content');
+};
+
+export default (rawData) => {
+  const dom = new DOMParser().parseFromString(rawData, 'text/xml');
+  validate(dom);
+  const channelEl = dom.querySelector('rss > channel');
+  const data = getDataFromNode(channelEl, ['title', 'description', 'link']);
+  const items = Array.from(channelEl.querySelectorAll('item')).map(parseItem);
+  return { ...data, items };
 };
