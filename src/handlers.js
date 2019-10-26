@@ -56,7 +56,8 @@ const syncChannelPosts = (currentChannel, currentState) => {
 export const addChannel = (currentState) => (event) => {
   event.preventDefault();
   const state = currentState;
-  const url = new FormData(event.target).get('rss-url');
+  const formData = new FormData(event.target);
+  const url = formData.get('rss-url');
   const loadingChannel = { url, status: 'loading' };
   state.inputState = 'empty';
   state.channels = [loadingChannel, ...state.channels];
@@ -76,7 +77,10 @@ export const addChannel = (currentState) => (event) => {
     });
 };
 
-export const removeChannel = (currentState) => (event, removingChannel) => {
+export const removeChannel = (currentState) => ({ target }) => {
   const state = currentState;
-  state.channels = state.channels.filter((channel) => channel !== removingChannel);
+  const data = target.dataset;
+  if (_.has(data, 'dismiss')) {
+    state.channels = state.channels.filter(({ url }) => url !== data.url);
+  }
 };

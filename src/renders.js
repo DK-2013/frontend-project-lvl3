@@ -1,6 +1,6 @@
-import $ from 'jquery';
 import 'bootstrap/js/dist/modal';
 import 'bootstrap/js/dist/alert';
+import _ from 'lodash';
 
 export const renderRssForm = (state, container) => () => {
   const { inputState } = state;
@@ -35,80 +35,77 @@ export const renderRssForm = (state, container) => () => {
   }
 };
 
-const showDescription = ({ data: { description, modalCt, title } }) => {
-  modalCt.find('.modal-title').text(title);
-  modalCt.find('.modal-body').text(description);
-  modalCt.modal('show');
-};
-
-const emmitRemoveChannel = ({ data: { channel, container } }) => {
-  $(container).triggerHandler('rss-remove-channel', channel);
-};
-
-const renderChannel = (container) => (channel) => {
+const renderChannel = (channel) => {
   const {
     status, title, description, url,
   } = channel;
-  let node;
   switch (status) {
     case 'loading':
-      node = $(`<li class="alert alert-primary p-1" role="alert">
+      return `<li class="alert alert-primary p-1" role="alert">
               Loading...
               <div  class="progress" style="height: 1.5rem">
-                <div class="progress-bar progress-bar-striped progress-bar-animated text-left" style="width: 100%; padding: 0 .5rem">
+                <div class="progress-bar progress-bar-striped progress-bar-animated text-left"
+                      style="width: 100%; padding: 0 .5rem">
                   <span class="text-truncate">${url}</span>
                 </div>
               </div>
-            </li>`);
-      break;
+            </li>`;
     case 'ready':
-      node = $(`<li>
+      return `<li>
               <h5>${title}</h5>
               <p>${description}</p>
-            </li>`);
-      break;
+            </li>`;
     case 'error':
-      node = $(`<li class="alert alert-danger p-1" role="alert">
+      return `<li class="alert alert-danger p-1" role="alert">
               <div>
                 Something went wrong...
-                <button class="close" data-dismiss="alert" >&times;</button>
+                <button class="close" data-dismiss="alert" data-url="${url}">&times;</button>
               </div>
               <div  class="progress" style="height: 1.5rem">
-                <div class="progress-bar bg-danger progress-bar-striped text-left" style="width: 100%; padding: 0 .5rem">
+                <div class="progress-bar bg-danger progress-bar-striped text-left"
+                      style="width: 100%; padding: 0 .5rem">
                   <span class="text-truncate">${url}</span>
                 </div>
               </div>
-            </li>`);
-      node.on('click', 'button', { channel, container }, emmitRemoveChannel);
-      break;
+            </li>`;
     default:
       throw new Error(`Unknown status chanel: ${url}`);
   }
-  return node;
 };
 
 export const renderChannels = (state, container) => () => {
   const { channels } = state;
-  const renderedChannels = channels.map(renderChannel(container));
-  container.find('.channels').empty().append(renderedChannels);
+  const channelListElement = container;
+  channelListElement.innerHTML = channels.map(renderChannel).join('');
 };
 
-const renderPost = (modalCt) => ({ link, title, description }) => {
-  const node = $(`<div class="row">
+const renderPost = ({ link, title, description }) => `<div class="row">
     <div class="col-1">
-      <button class="btn btn-primary btn-sm py-0"> + </button>
+      <button class="btn btn-primary btn-sm py-0"
+              data-toggle="modal" data-target=".post-description"
+              data-description="${description}"
+              data-title="${title}"> + </button>
     </div>
     <div class="col-11">
       <a href="${link}" target="_blank">${title}</a>
     </div>
-  </div>`);
-  node.on('click', 'button', { description, modalCt, title }, showDescription);
-  return node;
+  </div>`;
+
+const renderPostInModal = (container) => ({ target }) => {
+  const data = target.dataset;
+  if (_.has(data, 'description')) {
+    const { description, title } = data;
+    const titleHolderElement = container.querySelector('.post-description .modal-title');
+    const descriptionHolderElement = container.querySelector('.post-description .modal-body');
+    titleHolderElement.textContent = title;
+    descriptionHolderElement.textContent = description;
+  }
 };
 
 export const renderPosts = (state, container) => () => {
   const { posts } = state;
-  const modalCt = container.find('.modal');
-  const renderedPosts = posts.map(renderPost(modalCt));
-  container.find('.posts').empty().append(renderedPosts);
+  const postListElement = container.querySelector('.posts');
+  const renderedPosts = posts.map(renderPost);
+  postListElement.innerHTML = renderedPosts.join('');
+  postListElement.addEventListener('click', renderPostInModal(container));
 };

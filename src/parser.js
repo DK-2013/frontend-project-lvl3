@@ -11,7 +11,7 @@ const parseItem = (node) => getDataFromNode(node, ['title', 'description', 'link
 const validate = (docElement) => {
   const requiredElementNames = ['title', 'description', 'link'];
   const getRequiredElement = (elName) => docElement.querySelector(`rss > channel > ${elName}`);
-  const requiredElements = requiredElementNames.map(getRequiredElement, docElement);
+  const requiredElements = requiredElementNames.filter(getRequiredElement, docElement);
   if (requiredElements.length !== 3) throw new Error('Invalid schema of loaded content');
 };
 

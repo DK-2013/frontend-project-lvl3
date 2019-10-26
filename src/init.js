@@ -1,5 +1,4 @@
 import '@babel/polyfill';
-import $ from 'jquery';
 import { watch } from 'melanke-watchjs';
 import { onInputUrl, addChannel, removeChannel } from './handlers';
 import { renderRssForm, renderChannels, renderPosts } from './renders';
@@ -16,11 +15,12 @@ export default () => {
 
   const rssLinkInputElement = container.querySelector('input');
   const rssLinkSubmitFormElement = container.querySelector('form');
+  const channelListElement = container.querySelector('.channels');
   rssLinkInputElement.addEventListener('input', onInputUrl(state));
   rssLinkSubmitFormElement.addEventListener('submit', addChannel(state));
-  $(container).on('rss-remove-channel', removeChannel(state));
+  channelListElement.addEventListener('click', removeChannel(state));
 
   watch(state, 'inputState', renderRssForm(state, container));
-  watch(state, 'channels', renderChannels(state, $(container)));
-  watch(state, 'posts', renderPosts(state, $(container)));
+  watch(state, 'channels', renderChannels(state, channelListElement));
+  watch(state, 'posts', renderPosts(state, container));
 };
