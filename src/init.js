@@ -3,7 +3,6 @@ import { watch } from 'melanke-watchjs';
 import { onInputUrl, addChannel, removeChannel } from './handlers';
 import { renderRssForm, renderChannels, renderPosts } from './renders';
 
-
 export default () => {
   const container = document.getElementById('rss-aggregator');
 
