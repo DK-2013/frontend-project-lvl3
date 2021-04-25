@@ -2,7 +2,7 @@ install:
 	npm i
 
 develop:
-	NODE_ENV=development npx webpack-dev-server
+	npm run develop
 
 build:
 	rm -rf dist
