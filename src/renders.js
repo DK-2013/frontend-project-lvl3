@@ -37,7 +37,7 @@ export const renderRssForm = (state, container) => () => {
 
 const renderChannel = (channel) => {
   const {
-    status, title, description, url,
+    status, title, description, url, errMsg,
   } = channel;
   switch (status) {
     case 'loading':
@@ -58,7 +58,7 @@ const renderChannel = (channel) => {
     case 'error':
       return `<li class="alert alert-danger p-1" role="alert">
               <div>
-                Something went wrong...
+                ${errMsg}
                 <button class="close" data-dismiss="alert" data-url="${url}">&times;</button>
               </div>
               <div  class="progress" style="height: 1.5rem">

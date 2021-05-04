@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Training project RSS reader",
   "scripts": {
-    "develop": "NODE_ENV=development npx webpack-dev-server --port 8090",
+    "develop": "NODE_ENV=development npx webpack-dev-server --host 0.0.0.0",
     "test": "jest --passWithNoTests"
   },
   "repository": {

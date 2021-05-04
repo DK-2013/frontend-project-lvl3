@@ -73,6 +73,10 @@ export const addChannel = (currentState) => (event) => {
     })
     .catch((error) => {
       loadingChannel.status = 'error';
+      const isAccessError = _.get(error, 'response.status') === 403;
+      loadingChannel.errMsg = isAccessError
+        ? `<a href="${cors}" target="blank">Try get access here</a>`
+        : 'Something went wrong...';
       throw error;
     });
 };
